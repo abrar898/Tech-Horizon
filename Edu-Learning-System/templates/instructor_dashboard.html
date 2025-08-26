@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block title %}Instructor Dashboard - LearnHub{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fw-bold">Instructor Dashboard</h1>
+                    <p class="text-muted">Manage your courses and track student progress</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('create_course') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus me-2"></i>Create New Course
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title opacity-75">Total Courses</h6>
+                            <h2 class="fw-bold mb-0">{{ courses|length }}</h2>
+                        </div>
+                        <i class="fas fa-book fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title opacity-75">Published</h6>
+                            <h2 class="fw-bold mb-0">{{ published_courses }}</h2>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title opacity-75">Total Students</h6>
+                            <h2 class="fw-bold mb-0">{{ total_students }}</h2>
+                        </div>
+                        <i class="fas fa-users fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title opacity-75">Total Revenue</h6>
+                            <h2 class="fw-bold mb-0">
+                                $0
+                            </h2>
+                        </div>
+                        <i class="fas fa-dollar-sign fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Management -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chalkboard-teacher me-2"></i>My Courses
+                        </h5>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-secondary active" onclick="filterCourses('all')">
+                                All ({{ courses|length }})
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="filterCourses('published')">
+                                Published ({{ published_courses }})
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="filterCourses('draft')">
+                                Draft ({{ courses|length - published_courses }})
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-0">
+                    {% if courses %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="border-0 ps-4">Course</th>
+                                        <th class="border-0">Status</th>
+                                        <th class="border-0">Students</th>
+                                        <th class="border-0">Price</th>
+                                        <th class="border-0">Created</th>
+                                        <th class="border-0">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for course in courses %}
+                                    <tr class="course-row" data-status="{% if course.is_published %}published{% else %}draft{% endif %}">
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-1 fw-bold">{{ course.title }}</h6>
+                                                    <p class="text-muted mb-0 small">
+                                                        {{ course.description[:80] }}...
+                                                    </p>
+                                                    <div class="mt-1">
+                                                        <span class="badge bg-secondary">{{ course.difficulty_level }}</span>
+                                                        {% if course.duration_minutes %}
+                                                            <span class="badge bg-info">{{ course.duration_minutes }} min</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if course.is_published %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check-circle me-1"></i>Published
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-edit me-1"></i>Draft
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-users text-muted me-2"></i>
+                                                <span class="fw-bold">{{ course.enrollments|length }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if course.price > 0 %}
+                                                <span class="fw-bold text-success">${{ "%.2f"|format(course.price) }}</span>
+                                            {% else %}
+                                                <span class="badge bg-info">FREE</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-muted">
+                                            {{ course.created_at.strftime('%b %d, %Y') }}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('course_detail', course_id=course.id) }}" 
+                                                   class="btn btn-outline-primary" title="View Course">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('edit_course', course_id=course.id) }}" 
+                                                   class="btn btn-outline-secondary" title="Edit Course">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button class="btn btn-outline-success" 
+                                                        onclick="togglePublishStatus({{ course.id }}, {{ course.is_published|tojson }})"
+                                                        title="{% if course.is_published %}Unpublish{% else %}Publish{% endif %} Course">
+                                                    <i class="fas fa-{% if course.is_published %}eye-slash{% else %}globe{% endif %}"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <!-- Empty State -->
+                        <div class="text-center py-5">
+                            <i class="fas fa-chalkboard-teacher fa-4x text-muted mb-4"></i>
+                            <h4 class="text-muted">No courses created yet</h4>
+                            <p class="text-muted mb-4">Start creating your first course and share your knowledge with students worldwide.</p>
+                            <a href="{{ url_for('create_course') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus me-2"></i>Create Your First Course
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    {% if courses %}
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-rocket me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('create_course') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus me-2"></i>Create New Course
+                        </a>
+                        <button class="btn btn-outline-success" onclick="publishAllDrafts()">
+                            <i class="fas fa-globe me-2"></i>Publish All Drafts
+                        </button>
+                        <a href="{{ url_for('courses') }}" class="btn btn-outline-info">
+                            <i class="fas fa-search me-2"></i>Browse All Courses
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Performance Tips
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-lightbulb text-warning me-2"></i>
+                            Add detailed course descriptions
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-lightbulb text-warning me-2"></i>
+                            Create engaging video content
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-lightbulb text-warning me-2"></i>
+                            Include interactive quizzes
+                        </li>
+                        <li>
+                            <i class="fas fa-lightbulb text-warning me-2"></i>
+                            Respond to student feedback
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterCourses(status) {
+    const rows = document.querySelectorAll('.course-row');
+    const buttons = document.querySelectorAll('[onclick^="filterCourses"]');
+    
+    // Remove active class from all buttons
+    buttons.forEach(btn => btn.classList.remove('active'));
+    
+    // Add active class to clicked button
+    event.target.classList.add('active');
+    
+    rows.forEach(row => {
+        if (status === 'all' || row.dataset.status === status) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function togglePublishStatus(courseId, currentStatus) {
+    const action = currentStatus ? 'unpublish' : 'publish';
+    const confirmMessage = `Are you sure you want to ${action} this course?`;
+    
+    if (confirm(confirmMessage)) {
+        // In a real implementation, this would make an AJAX call to update the status
+        alert(`Course ${action} functionality would be implemented here.`);
+        // For now, just reload the page
+        // location.reload();
+    }
+}
+
+function publishAllDrafts() {
+    const draftCourses = document.querySelectorAll('[data-status="draft"]').length;
+    
+    if (draftCourses === 0) {
+        alert('No draft courses found.');
+        return;
+    }
+    
+    if (confirm(`Are you sure you want to publish all ${draftCourses} draft courses?`)) {
+        // In a real implementation, this would make an AJAX call
+        alert('Publish all drafts functionality would be implemented here.');
+        // location.reload();
+    }
+}
+
+// Add row hover effects
+document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('.course-row');
+    
+    rows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'var(--bs-light)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+});
+</script>
+{% endblock %}

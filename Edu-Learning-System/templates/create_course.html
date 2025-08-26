@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Create Course - LearnHub{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('instructor_dashboard') }}">Instructor Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Create Course</li>
+                </ol>
+            </nav>
+
+            <div class="card border-0 shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>Create New Course
+                    </h3>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-4">
+                                    <label for="title" class="form-label fw-bold">Course Title *</label>
+                                    <input type="text" class="form-control form-control-lg" id="title" name="title" 
+                                           placeholder="Enter a compelling course title" required>
+                                    <div class="form-text">Choose a clear, descriptive title that tells students what they'll learn.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-bold">Course Description *</label>
+                            <textarea class="form-control" id="description" name="description" rows="5" 
+                                      placeholder="Describe what students will learn in this course..." required></textarea>
+                            <div class="form-text">Provide a detailed description of the course content and learning outcomes.</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label for="price" class="form-label fw-bold">Price (USD)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="price" name="price" 
+                                               min="0" step="0.01" value="0" placeholder="0.00">
+                                    </div>
+                                    <div class="form-text">Set to 0 for free courses. You can change this later.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label for="difficulty" class="form-label fw-bold">Difficulty Level</label>
+                                    <select class="form-select" id="difficulty" name="difficulty">
+                                        <option value="Beginner">Beginner</option>
+                                        <option value="Intermediate">Intermediate</option>
+                                        <option value="Advanced">Advanced</option>
+                                    </select>
+                                    <div class="form-text">Choose the appropriate difficulty level for your target audience.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label for="duration" class="form-label fw-bold">Estimated Duration (minutes)</label>
+                                    <input type="number" class="form-control" id="duration" name="duration_minutes" 
+                                           min="1" placeholder="60">
+                                    <div class="form-text">Approximate total time to complete the course.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Next Steps:</strong> After creating your course, you'll be able to add lessons, upload videos, create quizzes, and publish your course.
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('instructor_dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-4">
+                                <i class="fas fa-save me-2"></i>Create Course
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Course Creation Tips -->
+            <div class="card border-0 shadow mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Tips for Creating Great Courses
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Use clear, specific course titles
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Include learning outcomes in description
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Structure content logically
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Add engaging video content
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Create interactive quizzes
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Price competitively
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Form validation and enhancements
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const titleInput = document.getElementById('title');
+    const descriptionInput = document.getElementById('description');
+    
+    // Real-time character count for title
+    titleInput.addEventListener('input', function() {
+        const maxLength = 200;
+        const currentLength = this.value.length;
+        
+        if (currentLength > maxLength * 0.8) {
+            this.classList.add('border-warning');
+        } else {
+            this.classList.remove('border-warning');
+        }
+    });
+
+    // Real-time character count for description
+    descriptionInput.addEventListener('input', function() {
+        const maxLength = 2000;
+        const currentLength = this.value.length;
+        
+        if (currentLength > maxLength * 0.8) {
+            this.classList.add('border-warning');
+        } else {
+            this.classList.remove('border-warning');
+        }
+    });
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Course...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

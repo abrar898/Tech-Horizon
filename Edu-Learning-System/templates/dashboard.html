@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - LearnHub{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fw-bold">Welcome back, {{ current_user.first_name or 'Student' }}!</h1>
+                    <p class="text-muted">Continue your learning journey</p>
+                </div>
+                <div class="text-end">
+                    {% if current_user.profile_image_url %}
+                        <img src="{{ current_user.profile_image_url }}" alt="Profile" class="rounded-circle" width="64" height="64" style="object-fit: cover;">
+                    {% else %}
+                        <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                            <i class="fas fa-user fa-2x text-white"></i>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-0">Enrolled Courses</h5>
+                            <h2 class="fw-bold">{{ enrolled_courses|length }}</h2>
+                        </div>
+                        <i class="fas fa-book fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-0">Completed</h5>
+                            <h2 class="fw-bold">{{ enrolled_courses|selectattr('completed_at')|list|length }}</h2>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-0">In Progress</h5>
+                            <h2 class="fw-bold">{{ enrolled_courses|rejectattr('completed_at')|list|length }}</h2>
+                        </div>
+                        <i class="fas fa-play-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- My Courses -->
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold">My Courses</h3>
+                <a href="{{ url_for('courses') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-plus me-1"></i>Browse More
+                </a>
+            </div>
+
+            {% if enrolled_courses %}
+                <div class="row g-4">
+                    {% for course in enrolled_courses %}
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <span class="badge bg-secondary">{{ course.difficulty_level }}</span>
+                                    {% if course.price > 0 %}
+                                        <small class="text-success fw-bold">PAID</small>
+                                    {% else %}
+                                        <small class="text-info fw-bold">FREE</small>
+                                    {% endif %}
+                                </div>
+                                
+                                <h5 class="card-title fw-bold">{{ course.title }}</h5>
+                                <p class="card-text text-muted">{{ course.description[:80] }}...</p>
+                                
+                                <!-- Progress Bar -->
+                                {% set enrollment = enrolled_courses|selectattr('course', 'equalto', course)|first %}
+                                {% if enrollment and enrollment.progress_percentage %}
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <small class="text-muted">Progress</small>
+                                            <small class="text-muted">{{ "%.0f"|format(enrollment.progress_percentage) }}%</small>
+                                        </div>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                 style="width: {{ enrollment.progress_percentage }}%"></div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-user me-1"></i>{{ course.instructor.first_name }} {{ course.instructor.last_name }}
+                                    </small>
+                                    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-primary btn-sm">
+                                        Continue <i class="fas fa-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No courses enrolled yet</h4>
+                    <p class="text-muted">Start your learning journey by enrolling in a course.</p>
+                    <a href="{{ url_for('courses') }}" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Browse Courses
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('courses') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-2"></i>Browse All Courses
+                        </a>
+                        {% if not current_user.is_instructor %}
+                            <a href="{{ url_for('instructor_dashboard') }}" class="btn btn-outline-success">
+                                <i class="fas fa-chalkboard-teacher me-2"></i>Become an Instructor
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('create_course') }}" class="btn btn-outline-success">
+                                <i class="fas fa-plus me-2"></i>Create New Course
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Courses -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock me-2"></i>Recent Courses
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_courses %}
+                        {% for course in recent_courses[:4] %}
+                            <div class="d-flex align-items-center mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-primary rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-play text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1 fw-bold">{{ course.title }}</h6>
+                                    <small class="text-muted">{{ course.instructor.first_name }} {{ course.instructor.last_name }}</small>
+                                    <div class="mt-1">
+                                        <span class="badge bg-secondary">{{ course.difficulty_level }}</span>
+                                        {% if course.price > 0 %}
+                                            <span class="badge bg-success">${{ "%.0f"|format(course.price) }}</span>
+                                        {% else %}
+                                            <span class="badge bg-info">FREE</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">No recent courses available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
